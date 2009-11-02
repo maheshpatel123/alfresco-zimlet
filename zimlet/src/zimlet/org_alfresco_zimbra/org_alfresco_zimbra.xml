@@ -18,7 +18,6 @@
 	<includeCSS>treeview.css</includeCSS>
 	<includeCSS>autocomplete.css</includeCSS>
 	<handlerObject>Org_Alfresco_Zimbra</handlerObject>
-
     <userProperties>
 	 		<property type="string" name="alfurl" label="Enter the address of your Alfresco server" maxLength="50" value="">
 	 		</property>

@@ -12,8 +12,6 @@ var msg = "";
 
 var DEFAULT_FILE_NAME = "zimbra_email_attachment";
 
-var defaultEmailArchiveSpace = "Email Archives";
-
 var path = null;
 var name = null;
 var filename = null;
@@ -21,7 +19,6 @@ var content = null;
 var title = "";
 var description = "";
 var mimetype = null;
-var id = null;
 
 
 var tags;
@@ -35,11 +32,7 @@ if ( AlfCommon.Util.isNull(username) )
 
 for each (field in formdata.fields)
 {
-  if (field.name == "id")
-  {
-    id= field.value;
-  }
-  else if (field.name == "title")
+  if (field.name == "title")
   {
     title= field.value;
   }
@@ -166,46 +159,9 @@ script:
 	upload.properties.content.encoding = "UTF-8";
 	
 	upload.save();
-  	
-  	// Check to see if it needs to be associated with email body
-  	if ( id != null ) {
-  	
-  		// Try to find the email body
-  		var emailMsg = userhome.childByNamePath (defaultEmailArchiveSpace+"/"+id);
-  		
-  		// If email exists
-  		if ( emailMsg != null ) {
-  		
-  			var emailAttachments = emailMsg.assocs["cm:attachments"];
-						
-			var uploadNodeRef = upload.nodeRef;
-			
-			var associated = false;
-			
-			// Remove the existing attachment association if any
-			if ( emailAttachments != null ) {
-
-				for ( var i = 0 ; i < emailAttachments.length ; i ++ ) {
-
-					if ( emailAttachments[i].nodeRef.equals(uploadNodeRef))
-						associated = true;		
-
-				}
-
-			}
-  		
-			if ( ! associated) {
-				emailMsg.createAssociation(upload, "cm:attachments");
-				emailMsg.save();
-			}	
-					
-  		}
-  	
-  	}
-  	
-  	
+  
   	status = true;
-  	msg += "Attachment "+filename+" has been saved to Space "+docSpace.properties.name; 
+  	msg = "Document "+filename+" has been uploaded to Space "+docSpace.properties.name; 
   
 }
 

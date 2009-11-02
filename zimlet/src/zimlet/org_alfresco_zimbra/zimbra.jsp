@@ -16,13 +16,9 @@ java.io.File, java.lang.Exception" %>
     String tags = null;
     String ticket = null;
     String name = null;
-    String id = null;
     
     try { src = request.getParameter("src");   // Document source 
     } catch (Exception e) { src = ""; }
-
-    try { id = request.getParameter("id");   // Document source 
-    } catch (Exception e) {id = ""; }
 
     try { name = request.getParameter("name");   // Document name
     	  name = URLEncoder.encode (name,"UTF-8").replace("+", "%20");
@@ -104,7 +100,6 @@ java.io.File, java.lang.Exception" %>
 
     mpm.addParameter ("ticket", ticket);
     mpm.addParameter ("path", path);
-    if ((id != null) && (id.length() > 0)) { mpm.addParameter ("id", id); }
     if ((name != null) && (name.length() > 0)) { mpm.addParameter ("name", name); }
     if ((title != null) && (title.length() > 0)) { mpm.addParameter ("title", title); }
     if ((desc != null) && (desc.length() > 0)) { mpm.addParameter ("desc", desc); }

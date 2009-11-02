@@ -1,83 +1,35 @@
-/**
- * Copyright (C) 2005-2007 Alfresco Software Limited.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+/* Alfresco Integration zimlet object */
 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+// Constants for web script services
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
- */
+var ALF_WS_URL_PREFIX   = "/alfresco/service";
 
-/**
- * Alfresco Zimlet
- * @author Yong Qu
- * @version beta 2
- * @description Zimlet for integration between zimbar and Alfresco CMS.
- * 
- */
+var ALF_WCWS_URL_PREFIX = "/alfresco/wcservice";
 
-/**
- * Alfresco Zimlet Constants
- * 
- */
-var AlfConstants = {
+var ALF_LOGIN_SERVICE_URL  = ALF_WS_URL_PREFIX + "/api/login";
 
-	Version: 'beta 2',
-	
-	debug: true,
+var ALF_TICKET_SERVICE_URL = ALF_WS_URL_PREFIX + "/api/login/ticket/";
 
-	ALF_WS_URL_PREFIX: "/alfresco/service",
+// Other constants used by this program
 
-	ALF_WCWS_URL_PREFIX: "/alfresco/wcservice",
+var ALFRESCO_BUSYIMGURL = "img/animated/Imgwait_32.gif";
 
-	ALF_LOGIN_SERVICE_URL:  ALF_WS_URL_PREFIX + "/api/login",
-
-	ALF_TICKET_SERVICE_URL: ALF_WS_URL_PREFIX + "/api/login/ticket/",
-	
-	ALF_NAV_SERVICE_URL: "/easy/nav",
-
-	ALFRESCO_BUSYIMGURL: "img/animated/Imgwait_32.gif"
-  
-};
-
-
-/**
- * Alfresco Zimlet Object
- * 
- */
 function Org_Alfresco_Zimbra()
 {
-    // data members related to alfresco document management
 	this.ticket = null;
 	
-    // view state management (for attach files dialog)
+    /* data members related to alfresco document management
+     */
+
+    /* view state management (for attach files dialog) */
     this.viewstate_div = null;          /* view state (document selection, pagination, etc) */
 
-    // attachment state) variables 
+    /* (attachment state) variables */
     this.attach_current = -1;           // current document being attached
     this.attach_documents = [];         // list of documents to be attached
     	
 }
 
-/**
- * Alfresco Zimlet Object Prototype
- * 
- */
 Org_Alfresco_Zimbra.prototype = new ZmZimletBase();
 
 Org_Alfresco_Zimbra.prototype.constructor = Org_Alfresco_Zimbra;
@@ -88,24 +40,17 @@ Org_Alfresco_Zimbra.prototype.init = function()
     // add a property page to the `attach files' dialog
     this.addAlfrescoTabToAttachDialog ();
 
-    // add 'Save to Alfresco' link for email attachment
+    // add 'Save to Alfresco' link
     this.addAttachmentHandler ();
 
     // assign self to window object because we need to execute some code in window context
     window.Alfresco_widget = this;
     
     //YAHOO.util.Get.css("http://yui.yahooapis.com/2.5.2/build/autocomplete/assets/skins/sam/autocomplete.css");
- 
- 	//Add "Search Alfresco" to the Search toolbar.
-    if(appCtxt.get(ZmSetting.WEB_SEARCH_ENABLED))
-        this.addAlfrescoSearchToolBar((new AjxListener(this,this._alfrescoSearchListener)));       
+        
 };
 
-
-/**
- * Return the address of alfresco server.
- * 
- */
+// return the address of alfresco server.
 Org_Alfresco_Zimbra.prototype.getAlfUrl = function()
 {
     if ( this.alfurl != null ) {
@@ -126,12 +71,9 @@ Org_Alfresco_Zimbra.prototype.getAlfUrl = function()
 }
 
 
-/**
- * Utility functions for debugging.
- * 
- */
+/* Utility functions for debugging */
 Org_Alfresco_Zimbra.prototype.debug = function(msg) {
-    DBG.println ("[alfresco] " + msg);
+    DBG.println ("[alfhw] " + msg);
 }
 
 Org_Alfresco_Zimbra.prototype.info = function(msg) {
@@ -139,10 +81,8 @@ Org_Alfresco_Zimbra.prototype.info = function(msg) {
     this.debug (msg);
 }
 
-/**
- * Handler for menu items that do not have <actionURL> 
- * (see xml file for details on the menu items)
- */
+// handler for menu items that do not have <actionURL> 
+// (see xml file for details on the menu items)
 Org_Alfresco_Zimbra.prototype.menuItemSelected = function(itemId)
 {
 	switch (itemId) {
@@ -156,10 +96,8 @@ Org_Alfresco_Zimbra.prototype.menuItemSelected = function(itemId)
 	}
 }
 
-/**
- *  Display basic information about the alfresco server. Can also serve as a test of 
- *  the connection to the alfresco server.
- */
+// display basic information about the alfresco server. It can also serve as a test of 
+// the connection to the alfresco server.
 Org_Alfresco_Zimbra.prototype.displayAboutAlfrescoZimlet = function()
 {
     var view = new DwtComposite (this.getShell());
@@ -176,7 +114,7 @@ Org_Alfresco_Zimbra.prototype.displayAboutAlfrescoZimlet = function()
    
 		var alfurl = this.getAlfUrl();	
 
-		var alfAboutWSUrl = ["http://",alfurl,AlfConstants.ALF_WCWS_URL_PREFIX,"/zimbra/about","?ticket=",alfTicket].join("");
+		var alfAboutWSUrl = ["http://",alfurl,ALF_WCWS_URL_PREFIX,"/zimbra/about","?ticket=",alfTicket].join("");
 
 		var hwUrl = ZmZimletBase.PROXY + AjxStringUtil.urlComponentEncode(alfAboutWSUrl);
 
@@ -201,10 +139,7 @@ Org_Alfresco_Zimbra.prototype.displayAboutAlfrescoZimlet = function()
     dlg.popup();
 }
 
-
-/**
- *  Retrieve alfresco ticket for webscript service calls.
- */
+// retrieve alfresco ticket for webscript service calls.
 Org_Alfresco_Zimbra.prototype.getTicket = function(){
 
 	// Check if we already have the ticket
@@ -228,10 +163,7 @@ Org_Alfresco_Zimbra.prototype.getTicket = function(){
 		
 }
 
-
-/** 
- * Validate the Alfresco ticket. If it expires, try to renew it.
- */
+// validate the ticket. If it expires, try to renew it.
 Org_Alfresco_Zimbra.prototype.validateTicket = function(){
 
 	var alfurl = this.getUserProperty("alfurl");	
@@ -252,7 +184,7 @@ Org_Alfresco_Zimbra.prototype.validateTicket = function(){
 		
 	} else {
 	
-		var validationUrl = ["http://",alfurl,AlfConstants.ALF_TICKET_SERVICE_URL,this.ticket].join("");
+		var validationUrl = ["http://",alfurl,ALF_TICKET_SERVICE_URL,this.ticket].join("");
 
 		var proxyUrl = ZmZimletBase.PROXY + AjxStringUtil.urlComponentEncode(validationUrl)+"&user="+user+"&pass="+password+"&auth=basic";
 
@@ -285,9 +217,6 @@ Org_Alfresco_Zimbra.prototype.validateTicket = function(){
 
 }
 
-/** 
- * Invoke Alfresco login service to retrieve ticket.
- */
 Org_Alfresco_Zimbra.prototype.login = function(){
 
 	var password = this.getUserProperty("password");
@@ -300,7 +229,7 @@ Org_Alfresco_Zimbra.prototype.login = function(){
 
 	var alfurl = this.getAlfUrl();
 
-	var alfLoginUrl = ["http://",alfurl,AlfConstants.ALF_LOGIN_SERVICE_URL,"?u=",user,"&pw=",password].join("");
+	var alfLoginUrl = ["http://",alfurl,ALF_LOGIN_SERVICE_URL,"?u=",user,"&pw=",password].join("");
 			
 	var proxyUrl = ZmZimletBase.PROXY + AjxStringUtil.urlComponentEncode(alfLoginUrl);
 	
@@ -332,9 +261,7 @@ Org_Alfresco_Zimbra.prototype.login = function(){
 	
 }
 
-/** 
- * Add the alfreco document selection dialog box to the attach files page
- */
+// add the alfreco document selection dialog box to the attach files page
 Org_Alfresco_Zimbra.prototype.addAlfrescoTabToAttachDialog = function()
 {
 	var alfTicket = this.getTicket();
@@ -353,9 +280,7 @@ Org_Alfresco_Zimbra.prototype.addAlfrescoTabToAttachDialog = function()
     
 }
 
-/** 
- * Event handler which is called when alfresco documents are selected for attachment
- */
+// (event handler) called when alfresco documents are selected for attachment
 Org_Alfresco_Zimbra.prototype.onCheckDocuments = function(type, args)
 {
     //Populate the list of selected alfresco documents
@@ -366,17 +291,12 @@ Org_Alfresco_Zimbra.prototype.onCheckDocuments = function(type, args)
 
 }
 
-/** 
- * Check if the attachment dialog is inline or not.
- */
 Org_Alfresco_Zimbra.prototype.isInline = function()
 {
     return this._attachdlg.isInline();
 }
 
-/** 
- * Event handler which is called when alfresco documents are selected for attachment
- */
+// (event handler) called when alfresco documents are selected for attachment
 Org_Alfresco_Zimbra.prototype.onAttachDocuments = function()
 {
     this.attach_documents = this.getSelectedDocuments();
@@ -388,12 +308,14 @@ Org_Alfresco_Zimbra.prototype.onAttachDocuments = function()
     this.attachDocument(callback);
 }
 
-/** 
- * Get list of documents for attaching to the email.
- */
+/* get all <img> nodes selected for attachment */
 Org_Alfresco_Zimbra.prototype.getSelectedDocuments = function()
 {
     var documents = [];
+    //var sets = this.getDocumentsets();
+    //for (var s=0; s<sets.length; s++) {
+    //    imgs = imgs.concat (sets[s].getSelectedDocuments());
+    //}
     
 	var nodes = this.ATV.getCheckNodes();
 	
@@ -430,9 +352,17 @@ Org_Alfresco_Zimbra.prototype.getSelectedDocuments = function()
     return documents;
 }
 
+/* deselect all documents (= <img> nodes) from all sets that were previously selected for attachment */
+Org_Alfresco_Zimbra.prototype.deselectAllDocuments = function()
+{
+    //var sets = this.getDocumentsets();
+    //for (var s=0; s<sets.length; s++) {
+    //    sets[s].deselectAllDocuments();
+    //}
+}
 
-/** 
- * Invoked as a callback when all documents have been attached.
+/* Invoked (as a callback) when all images have been uploaded to the server
+   Now just attach the images to the composer window
  */
 Org_Alfresco_Zimbra.prototype.doneAttachDocuments = function ()
 {
@@ -444,15 +374,16 @@ Org_Alfresco_Zimbra.prototype.doneAttachDocuments = function ()
     attachment_list = this.attachment_ids.join(",");
     composer.sendMsg(attachment_list,ZmComposeController.DRAFT_TYPE_MANUAL,callback);
 
+    // and clean up all the documentsets
+    this.deselectAllDocuments();
+
     // also clear up the attach view
     this.attach_documents = [];
     this.attach_current = -1;
     this.attachment_ids = [];
 }
 
-/** 
- * Attach a document using the zimbra file-upload servlet
- */
+// upload a document to the zimbra file-upload servlet
 Org_Alfresco_Zimbra.prototype.attachDocument = function (callback)
 {
     var i = this.attach_current;
@@ -479,9 +410,7 @@ Org_Alfresco_Zimbra.prototype.attachDocument = function (callback)
     }
 }
 
-/** 
- * Invoked as a callback when a single document has been attached
- */
+// invoked as a callback when a single document has been attached
 Org_Alfresco_Zimbra.prototype.doneAttachDocument = function (callback, result)
 {
     var re = new RegExp("'([^']+)'", "m");
@@ -506,9 +435,7 @@ Org_Alfresco_Zimbra.prototype.doneAttachDocument = function (callback, result)
     this.attachDocument (callback);
 }
 
-/** 
- * Attachment handler for saving to alfresco.
- */
+/* For uploading attachments to alfresco */
 Org_Alfresco_Zimbra.prototype.addAttachmentHandler = function()
 {
     this._msgController = AjxDispatcher.run("GetMsgController");
@@ -533,9 +460,6 @@ Org_Alfresco_Zimbra.prototype.addAttachmentHandler = function()
 
 }
 
-/** 
- * Generate a html snippet for alfresco document link
- */
 Org_Alfresco_Zimbra.prototype.addSaveToAlfrescoLink = function (attachment)
 {
     var html = 
@@ -548,9 +472,7 @@ Org_Alfresco_Zimbra.prototype.addSaveToAlfrescoLink = function (attachment)
     return html;
 }
 
-/** 
- * Handle 'Save to Alfresco' action
- */
+/* Handle 'Save to Alfresco' action */
 Org_Alfresco_Zimbra.prototype.onSaveToAlfresco = function(ct,label,src)
 {
     
@@ -641,9 +563,8 @@ Org_Alfresco_Zimbra.prototype.onSaveToAlfresco = function(ct,label,src)
     this.setupSpacePathAutoComplete();
 }
 
-/** 
- * Setup space path autocomplete using YUI AutoComplete widget
- */
+/* Setup space path autocomplete using YUI AutoComplete widget */
+
 Org_Alfresco_Zimbra.prototype.setupSpacePathAutoComplete = function(){
     // Instantiate an Script Node DataSource and define schema as an array:
     //     ["Multi-depth.object.notation.to.find.a.single.result.item",
@@ -654,9 +575,11 @@ Org_Alfresco_Zimbra.prototype.setupSpacePathAutoComplete = function(){
     
 	var alfTicket =  this.getTicket() ;
 	
-	var alfurl = this.getAlfUrl();
+	var alfurl = this.getUserProperty("alfurl");	
+	if(!alfurl)
+		alfurl = this._zimletContext.getConfig("alfurl");	
 
-	var alfEasyNavWSUrl = ["http://",alfurl,AlfConstants.ALF_WCWS_URL_PREFIX,AlfConstants.ALF_NAV_SERVICE_URL,"?ticket=",alfTicket].join("");
+	var alfEasyNavWSUrl = ["http://",alfurl,ALF_WCWS_URL_PREFIX,"/easy/nav","?ticket=",alfTicket].join("");
 
     this.oACDS = new YAHOO.widget.DS_ScriptNode(alfEasyNavWSUrl, ["nodeList","path"]);
     this.oACDS.scriptQueryParam = "query";
@@ -674,9 +597,7 @@ Org_Alfresco_Zimbra.prototype.setupSpacePathAutoComplete = function(){
     };
 }
 
-/** 
- * Upload a single attachment to Alfresco
- */
+/* Upload a single attachment to Alfresco */
 Org_Alfresco_Zimbra.prototype.onConfirmSaveToAlfresco = function (ct, label, src, path, title, desc, tags)
 {
     /* Show a busy message indicating that the file is being uploaded */
@@ -686,7 +607,7 @@ Org_Alfresco_Zimbra.prototype.onConfirmSaveToAlfresco = function (ct, label, src
     var busyImgS = document.createElement ("span");
     busyImgS.className = "Alfresco_hCenter";
     var busyImg = document.createElement ("img");
-    busyImg.setAttribute ("src", AlfConstants.ALFRESCO_BUSYIMGURL);
+    busyImg.setAttribute ("src", ALFRESCO_BUSYIMGURL);
     busyImgS.appendChild (busyImg);
 
     var busyTextS = document.createElement ("span");
@@ -708,13 +629,21 @@ Org_Alfresco_Zimbra.prototype.onConfirmSaveToAlfresco = function (ct, label, src
     title = title || "";
     tags = tags || "";
 
-    // Make a call to zimbra.jsp to upload the selected document to Alfresco 
+    /* Make a call to zimbra.jsp to upload the selected document to Alfresco */
     
     var alfTicket =  this.getTicket() ;
 
     var url = this.getResource("zimbra.jsp");
+    var alfrescoparams = [["ticket",alfTicket]];
+    if (path.length >0)  { alfrescoparams.push (["path", path]); }
+    if (title.length >0) { alfrescoparams.push (["title", title]); }
+    if (desc.length >0)  { alfrescoparams.push (["desc", desc]); }
+    if (tags.length >0)  { alfrescoparams.push (["tags", tags]); }
 
-	var alfurl = this.getAlfUrl();
+	var alfurl = this.getUserProperty("alfurl");
+
+	if(!alfurl)
+			alfurl = this._zimletContext.getConfig("alfurl");
 			
     var params= ["src=" + AjxStringUtil.urlComponentEncode(src),
     			 "alfurl="+alfurl,
@@ -730,9 +659,6 @@ Org_Alfresco_Zimbra.prototype.onConfirmSaveToAlfresco = function (ct, label, src
     AjxRpc.invoke(params,url+"?"+params,null,callback,false);
 }
 
-/** 
- * Return document upload dialog
- */
 Org_Alfresco_Zimbra.prototype._getUploadDlg = function(){
     if(!this.uploadDlg){
         this.uploadDlg = new DwtDialog (appCtxt.getShell(),null,"Save Attachment to Alfresco",[DwtDialog.OK_BUTTON,DwtDialog.CANCEL_BUTTON]);
@@ -740,9 +666,8 @@ Org_Alfresco_Zimbra.prototype._getUploadDlg = function(){
     return this.uploadDlg;
 };
 
-/** 
- * Callback function after a document has been uploaded to Alfresco 
- * @result  contains the result of the Alfresco upload operation 
+/* Callback function after a document has been uploaded to Alfresco 
+   @result  contains the result of the Alfresco upload operation 
  */
 Org_Alfresco_Zimbra.prototype.onDoneSaveToAlfresco = function(result)
 {
@@ -792,9 +717,6 @@ Org_Alfresco_Zimbra.prototype.onDoneSaveToAlfresco = function(result)
     
 }
 
-/** 
- *
- */
 Org_Alfresco_Zimbra.prototype.msgDropped = function(msg)
 {
     var links = msg.attLinks;
@@ -803,10 +725,6 @@ Org_Alfresco_Zimbra.prototype.msgDropped = function(msg)
     }
 }
 
-/** 
- * Append document link html snippet to the composer.
- * @msg Message to be appended.
- */
 Org_Alfresco_Zimbra.prototype.addMsg = function (msg)
 {
 	// locate the composer control and set up the callback handler
@@ -816,9 +734,6 @@ Org_Alfresco_Zimbra.prototype.addMsg = function (msg)
 
 }
 
-/** 
- * Class for generating a navigation tree.
- */
 AlfrescoNavTree = function()
 {
     var tree, currentIconMode, alfurl="xxx", alfTicket="xxx", zimlet;
@@ -841,7 +756,7 @@ AlfrescoNavTree = function()
 		            
         alfTicket = zimlet.getTicket();
             
-		var sUrl = ["http://",alfurl,AlfConstants.ALF_WCWS_URL_PREFIX,"/easy/tree","?ticket=",alfTicket,"&p=",nodeLabel,"&callback=alfCallback"].join("");
+		var sUrl = ["http://",alfurl,ALF_WCWS_URL_PREFIX,"/easy/tree","?ticket=",alfTicket,"&p=",nodeLabel,"&callback=alfCallback"].join("");
 				
 		var result = AjxRpc.invoke(null, ZmZimletBase.PROXY + AjxStringUtil.urlComponentEncode(sUrl), null, null,true);
 		
@@ -990,9 +905,6 @@ AlfrescoNavTree = function()
 } ();
 
 /* removes all child nodes of a dom element */
-/** 
- *
- */
 function Alfresco_clearElement (el)
 {
     if (!el) { return; }
@@ -1006,9 +918,6 @@ function Alfresco_clearElement (el)
 
 /* AlfrescoTabView -- a class that implements the dialog box for attaching documents from Alfresco */
 
-/** 
- *
- */
 AlfrescoTabView = function (parent, zimlet, alfurl, alfTicket)
 {
     // initialize the `zimlet' member to point to the alfresco zimlet
@@ -1019,33 +928,17 @@ AlfrescoTabView = function (parent, zimlet, alfurl, alfTicket)
     DwtTabViewPage.call (this,parent);
 }
 
-/** 
- *
- */
 AlfrescoTabView.prototype = new DwtTabViewPage;
-
-/** 
- *
- */
 AlfrescoTabView.prototype.constructor = AlfrescoTabView;
 
-/** 
- *
- */
 AlfrescoTabView.prototype.toString = function() {
     return "AlfrescoTabView";
 }
 
-/** 
- *
- */
 AlfrescoTabView.prototype.gotAttachments = function() {
     return (this.zimlet.getSelectedDocuments().length > 0);
 }
 
-/** 
- *
- */
 AlfrescoTabView.prototype._createProgressDivs = function(){
 
     var apDiv = document.createElement ("div");
@@ -1054,7 +947,7 @@ AlfrescoTabView.prototype._createProgressDivs = function(){
     /* the 'work in progress' image */
     var apbusyDiv = document.createElement ("div");
     var busyimg = document.createElement ("img");
-    busyimg.setAttribute ("src", AlfConstants.ALFRESCO_BUSYIMGURL);
+    busyimg.setAttribute ("src", ALFRESCO_BUSYIMGURL);
     apbusyDiv.appendChild (busyimg);
     apDiv.appendChild (apbusyDiv);
 
@@ -1067,9 +960,6 @@ AlfrescoTabView.prototype._createProgressDivs = function(){
     this.approgressDiv = approgressDiv;
 };
 
-/** 
- *
- */
 AlfrescoTabView.prototype.getApprogressDiv = function(){
     if(!this.approgressDiv){
         this._createProgressDivs();
@@ -1077,9 +967,6 @@ AlfrescoTabView.prototype.getApprogressDiv = function(){
     return this.approgressDiv;
 };
 
-/** 
- *
- */
 AlfrescoTabView.prototype.getApDiv = function(){
     if(!this.apDiv){
         this._createProgressDivs();
@@ -1087,9 +974,6 @@ AlfrescoTabView.prototype.getApDiv = function(){
     return this.apDiv;
 };
 
-/** 
- *
- */
 AlfrescoTabView.prototype._createHtml = function()
 { 
     this._contentEl = this.getContentHtmlElement ();
@@ -1102,27 +986,18 @@ AlfrescoTabView.prototype._createHtml = function()
 }
 
 /* Utility functions to show various stages of progress when the tab-view is visible */
-/** 
- *
- */
 AlfrescoTabView.prototype.showAttachingDocuments = function ()
 {
     this.showElement (this.getApDiv());
 }
 
 /* Updates the view of attaching documents */
-/** 
- *
- */
 AlfrescoTabView.prototype.showAttachProgress = function ()
 {
     Alfresco_clearElement (this.getApprogressDiv());
     this.getApprogressDiv().appendChild (document.createTextNode ("Attached " + (this.zimlet.attach_current + 1) + " of " + this.zimlet.attach_documents.length + " documents"));
 }
 
-/** 
- *
- */
 AlfrescoTabView.prototype.resetAttachProgress = function ()
 {
     Alfresco_clearElement (this.getApprogressDiv());
@@ -1130,9 +1005,6 @@ AlfrescoTabView.prototype.resetAttachProgress = function ()
 }
 
 // Utility function to show custom text in the attachment dialog. Useful when something else needs to be shown
-/** 
- *
- */
 AlfrescoTabView.prototype.showElement = function (el)
 {
     Alfresco_clearElement (this._contentEl);
@@ -1140,9 +1012,6 @@ AlfrescoTabView.prototype.showElement = function (el)
 }
 
 // Overridden function to draw the (contents of the) Alfresco Documents tab in the Attach Files dialog box
-/** 
- *
- */
 AlfrescoTabView.prototype.showMe = function ()
 {
     // clear the main view prior to displaying anything
@@ -1158,430 +1027,7 @@ AlfrescoTabView.prototype.showMe = function ()
    	this.setSize(Dwt.DEFAULT, "240");
 }
 
-/** 
- *
- */
 AlfrescoTabView.prototype.getCheckNodes = function() {
     return AlfrescoNavTree.getCheckedNodes();
 }
 
-
-// Called by the Zimbra framework upon an accepted drag'n'drop
-/** 
- *
- */
-Org_Alfresco_Zimbra.prototype.doDrop = function(obj) {
-	switch (obj.TYPE) {
-	    case "ZmMailMsg":
-    		//this.displayStatusMessage ("Message is dropped");
-    		this.archiveEmail (obj);
-			break;
-	    default:
-		this.displayErrorMessage("You somehow managed to drop a \"" + obj.TYPE
-					 + "\" but however the Alfresco Zimlet does't support it for drag'n'drop.");
-	}
-};
-
-/** 
- *
- */
-Org_Alfresco_Zimbra.prototype._getArchiveDlg = function(){
-    if(!this.archiveDlg){
-        this.archiveDlg = new DwtDialog (appCtxt.getShell(),null,"Save Email to Alfresco",[DwtDialog.OK_BUTTON,DwtDialog.CANCEL_BUTTON]);
-    }
-    return this.archiveDlg;
-};
-
-/* Callback function after an email attachment is archived to Alfresco 
-   @id email id
-   @attachment whether the email has attachments or not
-   @attlinks attachment links
-   @result contains the result of the Alfresco email body archiving operation 
- */
-/** 
- *
- */
-Org_Alfresco_Zimbra.prototype.onDoneArchiveAttachment = function(id,busy,result)
-{
-
-	try {
-        
-        // Check the status from the initial call which saves the email body to alfresco
-        var jso = eval('(' + result.text + ')');
-        
-        // Debug
-        this.debug ("Email Archive - Saving Email Attachment "+id);
-        this.debug ("Status: " + jso.status);
-        this.debug ("Return Details:");
-        this.debug ("<xmp>" + result.text + "</xmp>");
-        
-		Alfresco_clearElement (busy);
-		
-		// Display the status message
-		var statusS = document.createElement ("span");
-		statusS.className = "Alfresco_hCenter";
-		var detailS = document.createElement ("span");
-		detailS.className = "Alfresco_hCenter";
-
-		if (jso.status) {
-			statusS.appendChild (document.createTextNode ("Email attachment "+id+" archiving succeeded"));
-			detailS.appendChild (document.createTextNode ("Message: " + jso.msg));
-			
-			busy.appendChild (statusS);
-			busy.appendChild (detailS);
-		
-		} else {
-			statusS.appendChild (document.createTextNode ("Archive to Alfresco failed"));
-			busy.appendChild (statusS);
-			this.debug ("<xmp>" + result.text + "</xmp>");
-		}
-
-        
-    } catch (e) {
-    
-        this.debug ("Email Archiving Failed when trying to save attachment.");
-        this.debug (e.toString());
-        
-    }
-
-}
- 
- 
-/** 
- * Callback function after an email body has been archived to Alfresco 
- * @id email id
- * @attachment whether the email has attachments or not
- * @attlinks attachment links
- * @result contains the result of the Alfresco email body archiving operation 
- */
-Org_Alfresco_Zimbra.prototype.onDoneArchiveToAlfresco = function(id,attachment,attlinks,result)
-{
-    var archiveDlg = this._getArchiveDlg();
-    
-    var d = archiveDlg._getContentDiv();
-    
-    Alfresco_clearElement (d);
-
-    var jso = null;
-    
-    var attachmentSpacePath = null;
-
-    try {
-        
-        // Check the status from the initial call which saves the email body to alfresco
-        jso = eval('(' + result.text + ')');
-        
-        attachmentSpacePath = jso.attspacepath;
-        
-        // Debug
-        this.debug ("Email Archive - Saving Email Body");
-        this.debug ("Status: " + jso.status);
-        this.debug ("Return Details:");
-        this.debug ("<xmp>" + result.text + "</xmp>");
-        
-		// Display the status message
-		var statusS = document.createElement ("span");
-		statusS.className = "Alfresco_hCenter";
-		var detailS = document.createElement ("span");
-		detailS.className = "Alfresco_hCenter";
-
-		if (jso.status) {
-			statusS.appendChild (document.createTextNode ("Email body archiving succeeded"));
-			detailS.appendChild (document.createTextNode ("Message: " + jso.msg ));
-		} else {
-			statusS.appendChild (document.createTextNode ("Archive to Alfresco failed"));
-			this.debug ("<xmp>" + result.text + "</xmp>");
-		}
-
-		d.appendChild (statusS);
-		d.appendChild (detailS);
-
-		archiveDlg.setButtonEnabled (DwtDialog.OK_BUTTON, true);
-		archiveDlg.setButtonEnabled (DwtDialog.CANCEL_BUTTON, true);
-
-		archiveDlg.setButtonListener (DwtDialog.OK_BUTTON, new AjxListener (this, function() { archiveDlg.popdown(); }));
-		archiveDlg.setButtonListener (DwtDialog.CANCEL_BUTTON, new AjxListener (this, function() { archiveDlg.popdown(); }));
-		
-		if (!archiveDlg.isPoppedUp()) { archiveDlg.popup(); }
-
-        // If successful, starts to process attachments
-        
-        if ( jso.status ) {
-        
-			if ( attachment ) {
-
-				// If there are attachments
-
-				for ( var i = 0 ; i < attlinks.length ; i ++ ) {
-
-					// Show a busy message indicating that the email attachment is being saved
-
-					var busy = document.createElement ("div");
-					busy.className = "Alfresco_hCenter";
-					busy.id = "busyatt"+i;
-
-					var busyImgS = document.createElement ("span");
-					busyImgS.className = "Alfresco_hCenter";
-					var busyImg = document.createElement ("img");
-					busyImg.setAttribute ("src", AlfConstants.ALFRESCO_BUSYIMGURL);
-					busyImgS.appendChild (busyImg);
-
-					var busyTextS = document.createElement ("span");
-					busyTextS.className = "Alfresco_hCenter";
-					busyTextS.appendChild (document.createTextNode ("Saving email attachment "+attlinks[i].label+" ..."));
-
-					busy.appendChild (busyImgS);
-					busy.appendChild (busyTextS);
-
-					var archiveDlg = this._getArchiveDlg();
-					var d = archiveDlg._getContentDiv();
-					//Alfresco_clearElement (d);
-
-					d.appendChild (busy);
-					
-					// Get attachment type
-					var attCt = attlinks[i].ct;
-
-					// Get attachment source url
-					var attUrl = attlinks[i].url;
-
-					// Get attachment label
-					var attLabel = attlinks[i].label;
-
-					// Make a call to zimbra.jsp to upload the selected document to Alfresco
-
-					var alfTicket =  this.getTicket() ;
-
-					var url = this.getResource("zimbra.jsp");
-
-					var alfurl = this.getAlfUrl();
-
-					// Prepare the parmeters for saving attachment to alfresco
-					var params= ["src=" + AjxStringUtil.urlComponentEncode(attUrl),
-								 "alfurl="+alfurl,
-								 "ticket=" + alfTicket,
-								 "id=" + AjxStringUtil.urlEncode (id),
-								 "name=" + AjxStringUtil.urlEncode (attLabel),
-								 "path=" + AjxStringUtil.urlEncode (attachmentSpacePath),
-								 "title=" + AjxStringUtil.urlEncode (attLabel),
-								 "desc=" + AjxStringUtil.urlEncode ("Attachment "+i +" of message "+id),
-								 "tags=" + AjxStringUtil.urlEncode ("")
-								].join ("&");
-
-					var callback = new AjxCallback (this,this.onDoneArchiveAttachment,[i,busy]);
-					
-					// Invoke attachment service
-					AjxRpc.invoke(params,url+"?"+params,null,callback,false);
-
-				}
-
-			} 
-    
-        
-        }
-        
-    } catch (e) {
-    
-        this.debug ("Alfresco Upload Failed:");
-        this.debug (e.toString());
-        
-    }
-    
-    
-
-    
-}
-
-/** 
- * Archive email body as well as attachments to alfresco
- * @obj message object
- */
-Org_Alfresco_Zimbra.prototype.archiveEmail = function(obj) {
-
-	// Retrieve message properties
-	var from = obj.from;
-	
-	var body = obj.body;
-
-	var id = obj.id;
-
-	var sentDate = obj.date;
-
-	var subject = obj.subject;
-	
-	var to = obj.to;
-	
-	var attachment = obj.attachment;
-	
-	var attlinks = obj.attlinks;
-	
-	// Prepare the inital dialog
-	
-    // Show a busy message indicating that the email body is being saved
-    
-    var busy = document.createElement ("div");
-    busy.className = "Alfresco_hCenter";
-
-    var busyImgS = document.createElement ("span");
-    busyImgS.className = "Alfresco_hCenter";
-    var busyImg = document.createElement ("img");
-    busyImg.setAttribute ("src", AlfConstants.ALFRESCO_BUSYIMGURL);
-    busyImgS.appendChild (busyImg);
-
-    var busyTextS = document.createElement ("span");
-    busyTextS.className = "Alfresco_hCenter";
-    busyTextS.appendChild (document.createTextNode ("Saving email body..."));
-
-    busy.appendChild (busyImgS);
-    busy.appendChild (busyTextS);
-
-    var archiveDlg = this._getArchiveDlg();
-    var d = archiveDlg._getContentDiv();
-    Alfresco_clearElement (d);
-
-    d.appendChild (busy);
-
-    if (!archiveDlg.isPoppedUp()) { archiveDlg.popup(); }
-	    
-    archiveDlg.setLocation(200,200);
-    
-    
-    // Prepare URL for Email Archiving Service
-    
-    var alfTicket =  this.getTicket() ;
-
-	var alfurl = this.getAlfUrl();	
-
-	var alfArchiveWSUrl = ["http://",alfurl,AlfConstants.ALF_WCWS_URL_PREFIX,"/zimbra/archive"].join("");
-
-    // Prepare parameter for invoking the archiving service
-    
-    var params= ["ticket=" + alfTicket,
-                 "id="+AjxStringUtil.urlEncode (id),
-                 "action="+AjxStringUtil.urlEncode ("savebody"),
-                 "from="+AjxStringUtil.urlEncode (from),
-                 "to="+AjxStringUtil.urlEncode (to),
-                 "attachment="+AjxStringUtil.urlEncode (attachment),
-                 "sentdate="+AjxStringUtil.urlEncode (sentDate),
-                 "subject="+AjxStringUtil.urlEncode (subject),
-                 "body="+AjxStringUtil.urlEncode (body)
-                ].join ("&");
-
-	var hwUrl = ZmZimletBase.PROXY + AjxStringUtil.urlComponentEncode(alfArchiveWSUrl+"?" + params);
-
-    var callback = new AjxCallback (this,this.onDoneArchiveToAlfresco,[id,attachment,attlinks]);
-    
-    // Invoke the service
-    
-    AjxRpc.invoke(params,hwUrl,null,callback,false);
-
-}
-
-// Add "Search Local" button the existing
-Org_Alfresco_Zimbra.prototype.addAlfrescoSearchToolBar =
-function(listener) {
-	var searchToolBar = this._searchToolBar = appCtxt.getSearchController().getSearchToolbar();
-	//Add Custom Button to the Search Toolbar
-	var searchMenuBtnTd = document.getElementById(searchToolBar._htmlElId+"_searchMenuButton");
-	var td = searchMenuBtnTd.parentNode.insertCell(searchMenuBtnTd.cellIndex+2);
-	td.id = searchToolBar._htmlElId + "_searchAlfresco";
-	td.className  =  'ZmSearchToolbarCell';
-	var b = searchToolBar._addButton({ tdId:"_searchAlfresco", lbl:"Alfresco",
-									   icon:"SEARCH", tooltip:"Search Alfresco Repository",
-									   buttonId:"_searchAlfrescoBttn"});
-	b.addSelectionListener(listener);
-};
-
-
-Org_Alfresco_Zimbra.prototype.onDoneSearchAlfresco = function(result) {
-
-	var docsJson = eval('(' + result.text + ')');
-	
-	var docs = docsJson.pagingList;
-		
-	var view = new DwtComposite(this.getShell());
-	var el = view.getHtmlElement();
-	
-	var alfurl = "http://"+this.getAlfUrl();
-
-
-	var info  ="<table class='Alfresco_iTable'>";
-	info +="<tr><th>Name</th><th>Path</th><th>Actions</th></tr>";
-
-	if (docs != null) {
-
-		for ( var i = 0 ; i < docs.length ; i ++ ) {
-
-			var docSrc = docs[i].src;
-
-			var docName = docs[i].name;
-
-			var docPath = docs[i].path;
-
-			var docDLink = alfurl+docs[i].dlink;
-
-			var docShortLink = "<a href=\\'"+alfurl+docs[i].shortlink+"\\'>"+docName+"</a>";
-
-			info +="<tr>";
-			info +="<td>"+docName +"</td>";
-			info +="<td>"+docPath +"</td>";
-			info +="<td><a class='AttLink' style='text-decoration:underline;' href='"+docDLink +"'>Download</a> | ";
-			info +="<a href='#' class='AttLink' style='text-decoration:underline;' onClick=\"window.Alfresco_widget.addMsg('"+docShortLink +"')\">Paste Short Link</a></td>";
-			info +="</tr>";
-
-		}
-
-	}
-
-	info +="</table>";
-
-	view.getHtmlElement().innerHTML = info;
-
-	var dialog_args = {
-		view  : view,
-		title : "Alfresco Search Results"
-	};
-
-	var dlg = this._createDialog(dialog_args);
-	dlg.setButtonVisible(DwtDialog.CANCEL_BUTTON, false);
-	dlg.setLocation(200,200);
-	dlg.popup();
-	dlg.setButtonListener(DwtDialog.OK_BUTTON,
-			  new AjxListener(this, function() {
-				  dlg.popdown();
-				  dlg.dispose();
-			  }));
-}
-
-
-Org_Alfresco_Zimbra.prototype._alfrescoSearchListener = function(ev) 
-{
-	var query = AjxStringUtil.trim(this._searchToolBar.getSearchFieldValue());
-
-	if (query && query.length) {
-
-    // Prepare URL for Email Archiving Service
-    
-    var alfTicket =  this.getTicket() ;
-
-	var alfurl = this.getAlfUrl();	
-
-	var alfSearchWSUrl = ["http://",alfurl,AlfConstants.ALF_WCWS_URL_PREFIX,"/zimbra/search"].join("");
-
-    // Prepare parameter for invoking the archiving service
-    
-    var params= ["ticket=" + alfTicket,
-                 "q="+AjxStringUtil.urlEncode (query)
-                ].join ("&");
-
-	var hwUrl = ZmZimletBase.PROXY + AjxStringUtil.urlComponentEncode(alfSearchWSUrl+"?" + params);
-
-    var callback = new AjxCallback (this,this.onDoneSearchAlfresco);
-    
-    // Invoke the service
-    
-    AjxRpc.invoke(params,hwUrl,null,callback,true);
-
-
-	}
-};
